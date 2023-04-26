@@ -19,11 +19,15 @@ const server = new ApolloServer({
 const serverHandler = startServerAndCreateNextHandler<NextApiRequest, Context>(
   server,
   {
-    context: async (req: NextApiRequest, res: NextApiResponse) => ({
-      req,
-      res,
-      db: prisma,
-    }),
+    context: async (req: NextApiRequest, res: NextApiResponse) => {
+      const session = await getServerSession(req, res, authOptions);
+      return {
+        req,
+        res,
+        db: prisma,
+        session,
+      };
+    },
   }
 );
 

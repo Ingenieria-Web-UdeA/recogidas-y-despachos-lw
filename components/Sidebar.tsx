@@ -3,6 +3,7 @@ import { signOut } from 'next-auth/react';
 import React from 'react';
 import { MdMenu, MdMenuOpen } from 'react-icons/md';
 import PrivateComponent from './PrivateComponent';
+import Link from 'next/link';
 
 const Sidebar = () => {
   const { openSidebar, setOpenSidebar } = useNavigationContext();
@@ -30,7 +31,9 @@ const Sidebar = () => {
               <li>Facturación</li>
             </PrivateComponent>
             <PrivateComponent role='Admin'>
-              <li>Indicadores</li>
+              <li>
+                <Link href='/indicadores'>Indicadores</Link>
+              </li>
             </PrivateComponent>
           </ul>
         </nav>

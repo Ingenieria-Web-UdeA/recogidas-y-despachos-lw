@@ -1,3 +1,5 @@
+import { getServerSession } from 'next-auth';
+import { authOptions } from 'pages/api/auth/[...nextauth]';
 import { Resolver } from 'types';
 
 const resolvers: Resolver = {
@@ -56,6 +58,30 @@ const resolvers: Resolver = {
       const collection = db.collection.findMany();
 
       return collection;
+    },
+    indicators: async (parent, args, context) => {
+      const { session, db } = context;
+      const userRole = await db.user.findUnique({
+        where: {
+          email: session?.user?.email ?? '',
+        },
+        include: {
+          role: true,
+        },
+      });
+
+      const role = userRole?.role?.name;
+
+      console.log('role', role, session?.user?.email);
+
+      if (role === 'Admin') {
+        return [
+          { id: 2, date: '2023-04-26', totalCollection: 10 },
+          { id: 1, date: '2023-04-25', totalCollection: 25 },
+        ];
+      }
+
+      return null;
     },
   },
   Mutation: {

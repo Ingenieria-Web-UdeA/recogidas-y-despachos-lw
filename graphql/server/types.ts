@@ -29,6 +29,12 @@ const typeDefs = gql`
     updatedAt: DateTime
   }
 
+  type Indicator {
+    id: ID!
+    date: DateTime
+    totalCollection: Int
+  }
+
   type Collection {
     id: ID!
     bunches: Int
@@ -45,6 +51,7 @@ const typeDefs = gql`
     users: [User]
     user(email: String!): User
     collections: [Collection]
+    indicators: [Indicator]
   }
 
   type Mutation {
