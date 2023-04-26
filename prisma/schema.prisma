@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  profile       Profile?
+  role          Role?        @relation(fields: [roleId], references: [id])
+  roleId        String?
+  accounts      Account[]
+  sessions      Session[]
+  collections   Collection[]
+  shipments     Shipment[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  document    String   @unique
+  phoneNumber String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Enum_RoleName {
+  Admin
+  User
+}
+
+model Role {
+  id        String        @id @default(cuid())
+  name      Enum_RoleName
+  users     User[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Lot {
+  id          String       @id @default(cuid())
+  name        String
+  collections Collection[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Collection {
+  id             String   @id @default(cuid())
+  bunches        Int
+  collectionDate DateTime
+  createdBy      User     @relation(fields: [userId], references: [id])
+  userId         String
+  lot            Lot      @relation(fields: [lotId], references: [id])
+  lotId          String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shipment {
+  id              String   @id @default(cuid())
+  shippedBunches  Int
+  shipmentDate    DateTime
+  bunchWeight     Float
+  deliveredWeight Float
+  createdBy       User     @relation(fields: [userId], references: [id])
+  userId          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
