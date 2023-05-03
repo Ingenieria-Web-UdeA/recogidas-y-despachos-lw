@@ -72,8 +72,6 @@ const resolvers: Resolver = {
 
       const role = userRole?.role?.name;
 
-      console.log('role', role, session?.user?.email);
-
       if (role === 'Admin') {
         return [
           { id: 2, date: '2023-04-26', totalCollection: 10 },
