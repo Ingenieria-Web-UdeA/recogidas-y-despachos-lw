@@ -1,6 +1,5 @@
 import Layout from '@layouts/Layout';
 import Head from 'next/head';
-import { data } from 'utils/fakeData';
 import _ from 'lodash';
 import { DataFilters } from '@components/DataFilters';
 import { ActionButtons } from '@components/ActionButtons';
@@ -12,6 +11,14 @@ import { MdFilterAlt, MdFilterAltOff } from 'react-icons/md';
 import { useState } from 'react';
 import CardLote from '@components/cards/CardLote';
 import PrivateRoute from '@components/PrivateRoute';
+import { useQuery } from '@apollo/client';
+import { GET_FILTERED_COLLECTIONS } from 'graphql/client/collections';
+import { Lot } from '@prisma/client';
+import { TypeColumn } from '@inovua/reactdatagrid-community/types';
+import ReactDataGrid from '@inovua/reactdatagrid-community';
+import '@inovua/reactdatagrid-community/index.css';
+import { GET_LOTS } from 'graphql/client/lots';
+import { ExtendedCollection } from 'types';
 
 const Home: NextPage = () => {
   const [showFilters, setShowFilters] = useState<boolean>(false);
@@ -58,40 +65,151 @@ const Home: NextPage = () => {
   );
 };
 
+const years = [2021, 2022, 2023];
+
+const months = [
+  { name: 'Enero', value: 0 },
+  { name: 'Febrero', value: 1 },
+  { name: 'Marzo', value: 2 },
+  { name: 'Abril', value: 3 },
+  { name: 'Mayo', value: 4 },
+  { name: 'Junio', value: 5 },
+  { name: 'Julio', value: 6 },
+  { name: 'Agosto', value: 7 },
+  { name: 'Septiembre', value: 8 },
+  { name: 'Octubre', value: 9 },
+  { name: 'Noviembre', value: 10 },
+  { name: 'Diciembre', value: 11 },
+];
+
 const TableDesktop = () => {
-  const tableData = _.groupBy(data, 'Fecha');
+  // const tableData = _.groupBy(data, 'Fecha');
+  const [dateFilters, setDateFilters] = useState<{
+    month: number;
+    year: number;
+  }>({ month: 4, year: 2023 });
+
+  const { data, loading } = useQuery<{
+    filterCollections: ExtendedCollection[];
+  }>(GET_FILTERED_COLLECTIONS, {
+    variables: {
+      month: dateFilters.month,
+      year: dateFilters.year,
+    },
+    fetchPolicy: 'cache-first',
+  });
+
+  const { data: lotData, loading: lotDataLoading } = useQuery<{ lots: Lot[] }>(
+    GET_LOTS
+  );
+
+  if (loading || lotDataLoading) return <div>Loading...</div>;
+
+  const lotColumns =
+    lotData?.lots.map((lot) => ({
+      name: lot.name,
+      header: lot.name,
+      defaultFlex: 1,
+      headerProps: {
+        style: {
+          backgroundColor: '#3730A3',
+          color: 'white',
+        },
+      },
+    })) ?? [];
+
+  const columns: TypeColumn[] = [
+    {
+      name: 'collectionDate',
+      header: 'Fecha de recogida',
+      defaultFlex: 1,
+      headerProps: {
+        style: {
+          backgroundColor: '#3730A3',
+          color: 'white',
+        },
+      },
+    },
+    ...lotColumns,
+  ];
+
+  const filterValues =
+    lotData?.lots?.map((lot) => ({
+      name: lot.name,
+      operator: 'gte',
+      type: 'number',
+      value: '0',
+    })) ?? [];
+
+  const tableData = _.groupBy(data?.filterCollections, 'collectionDate');
+
+  const transformedData = Object.keys(tableData).map((collectionDate) => {
+    const lotData: { [key: string]: string | number } = {
+      collectionDate,
+    };
+
+    tableData[collectionDate].forEach((collection) => {
+      lotData[collection.lot.name] = collection.bunches;
+    });
+
+    return lotData;
+  });
+
   return (
-    <div className='hidden flex-col lg:flex'>
-      <div className='flex h-[80vh] w-full justify-center overflow-y-scroll'>
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Lote 1</th>
-              <th>Lote 2</th>
-              <th>Lote 3</th>
-              <th>Lote 4</th>
-              <th>Lote 5</th>
-              <th>Lote 6</th>
-              <th>Lote 7</th>
-              <th>Lote 8</th>
-              <th>Lote 9</th>
-              <th>Lote 10</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(tableData).map((date) => (
-              <tr key={`row_${date}`}>
-                <td>{date}</td>
-                {tableData[date].map((lot) => (
-                  <td key={`data_${date}_${lot.Lote}`}>{lot.Racimos}</td>
-                ))}
-              </tr>
+    <div className='flex h-full w-full flex-col items-center gap-2'>
+      <div className='flex w-full justify-center gap-2'>
+        <label>
+          <span>Año</span>
+          <select
+            value={dateFilters.year.toString()}
+            onChange={(e) =>
+              setDateFilters((prev) => ({
+                ...prev,
+                year: parseInt(e.target.value),
+              }))
+            }
+          >
+            <option value='' disabled>
+              Seleccionar Año
+            </option>
+            {years.map((year) => (
+              <option key={`year_${year}`} value={year}>
+                {year}
+              </option>
             ))}
-          </tbody>
-        </table>
+          </select>
+        </label>
+        <label>
+          <span>Mes</span>
+          <select
+            value={dateFilters.month.toString()}
+            onChange={(e) =>
+              setDateFilters((prev) => ({
+                ...prev,
+                month: parseInt(e.target.value),
+              }))
+            }
+          >
+            <option value='' disabled>
+              Seleccionar mes
+            </option>
+            {months.map((month) => (
+              <option key={`month_${month.value}`} value={month.value}>
+                {month.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-      <div>paginacion</div>
+      <div className='hidden h-full w-full flex-col lg:flex'>
+        <ReactDataGrid
+          columns={columns}
+          dataSource={transformedData}
+          defaultFilterValue={filterValues}
+          pagination
+          pageSizes={[5, 10, 15, 20, 25, 31]}
+        />
+      </div>
     </div>
   );
 };

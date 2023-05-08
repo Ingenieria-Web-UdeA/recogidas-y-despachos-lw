@@ -1,4 +1,4 @@
-import { PrismaClient, Role, User } from '@prisma/client';
+import { Collection, Lot, PrismaClient, Role, User } from '@prisma/client';
 import { Session } from 'next-auth';
 import { NextApiRequest, NextApiResponse } from 'next/types';
 
@@ -21,4 +21,8 @@ export interface Resolver {
 
 export interface ExtendedUser extends User {
   role: Role;
+}
+
+export interface ExtendedCollection extends Collection {
+  lot: Lot;
 }

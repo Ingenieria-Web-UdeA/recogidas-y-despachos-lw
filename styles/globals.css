@@ -10,11 +10,11 @@ h1 {
   @apply text-2xl font-bold text-gray-900;
 }
 
-table {
+/* table {
   display: block;
-}
+} */
 
-th,
+/* th,
 td {
   @apply border border-black;
 }
@@ -25,19 +25,25 @@ th {
 
 tr:nth-child(even) {
   @apply bg-gray-300;
-}
+} */
 
 label {
   @apply flex flex-col;
 }
 
-input {
+input,
+select {
   @apply rounded-lg border border-gray-300 px-2 py-1 outline-none focus:border-indigo-500;
 }
 
 button,
-button[type='button'] {
+button[type='button'],
+button[type='submit'] {
   @apply rounded-lg bg-indigo-500 px-3 py-2 text-white shadow-lg hover:bg-indigo-400;
+}
+
+button.secondary {
+  @apply rounded-lg bg-white px-3 py-2 text-indigo-500 shadow-lg hover:bg-gray-100;
 }
 
 li {

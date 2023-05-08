@@ -1,5 +1,3 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from 'pages/api/auth/[...nextauth]';
 import { Resolver } from 'types';
 
 const resolvers: Resolver = {
@@ -55,9 +53,45 @@ const resolvers: Resolver = {
     collections: async (parent, args, context) => {
       const { db } = context;
 
-      const collection = db.collection.findMany();
+      const collections = await db.collection.findMany({});
 
-      return collection;
+      return collections;
+    },
+    filterCollections: async (parent, args, context) => {
+      const { db } = context;
+      const { month, year } = args;
+
+      const initalDate = new Date(year, month, 1, -5, 0, 0);
+      const finalDate = new Date(year, month + 1, 1, -5, 0, 0);
+
+      const filteredCollections = await db.collection.findMany({
+        where: {
+          AND: [
+            {
+              collectionDate: {
+                gte: initalDate,
+              },
+            },
+            {
+              collectionDate: {
+                lt: finalDate,
+              },
+            },
+          ],
+        },
+        orderBy: [
+          {
+            collectionDate: 'asc',
+          },
+          {
+            lot: {
+              index: 'asc',
+            },
+          },
+        ],
+      });
+
+      return filteredCollections;
     },
     indicators: async (parent, args, context) => {
       const { session, db } = context;
@@ -81,6 +115,13 @@ const resolvers: Resolver = {
 
       return null;
     },
+    lots: async (parent, args, context) => {
+      const { db } = context;
+
+      const lots = await db.lot.findMany();
+
+      return lots;
+    },
   },
   Mutation: {
     createUser: async (parent, args, context) => {
@@ -96,6 +137,37 @@ const resolvers: Resolver = {
       });
 
       return newUser;
+    },
+    createCollection: async (parent, args, context) => {
+      const { db, session } = context;
+
+      const newCollection = await db.collection.upsert({
+        where: {
+          collectionDate_lotId: {
+            collectionDate: new Date(args.collectionDate),
+            lotId: args.lot,
+          },
+        },
+        update: {
+          bunches: args.bunches,
+        },
+        create: {
+          bunches: args.bunches,
+          collectionDate: new Date(args.collectionDate),
+          lot: {
+            connect: {
+              id: args.lot,
+            },
+          },
+          createdBy: {
+            connect: {
+              email: session?.user?.email ?? '',
+            },
+          },
+        },
+      });
+
+      return newCollection;
     },
   },
 };
