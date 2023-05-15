@@ -114,6 +114,9 @@ const resolvers: Resolver = {
             },
           ],
         },
+        orderBy: {
+          createdAt: 'asc',
+        },
       });
 
       return filteredShipments;
@@ -146,6 +149,14 @@ const resolvers: Resolver = {
       const lots = await db.lot.findMany();
 
       return lots;
+    },
+    getCollectionsByMonth: async (parent, args, context) => {
+      const { db } = context;
+      const { year } = args;
+
+      return await db.$queryRaw`
+      select * from monthly_collections where year = ${year}
+      `;
     },
   },
   Mutation: {

@@ -1,11 +1,12 @@
 import { gql } from '@apollo/client';
 
 const GET_INDICATORS = gql`
-  query Indicators {
-    indicators {
-      id
-      date
-      totalCollection
+  query GetCollectionsByMonth($year: Int) {
+    getCollectionsByMonth(year: $year) {
+      year
+      month
+      lot
+      totalBunches
     }
   }
 `;
