@@ -1,4 +1,5 @@
 import { useUserData } from '@hooks/useUserData';
+import Layout from '@layouts/Layout';
 import { Enum_RoleName } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
@@ -11,7 +12,12 @@ interface PrivateRouteProps {
 const PrivateRoute = ({ role, children }: PrivateRouteProps) => {
   const { status, session, role: userRole, loadingUserData } = useUserData();
 
-  if (status === 'loading' || loadingUserData) return <div>Loading...</div>;
+  if (status === 'loading' || loadingUserData)
+    return (
+      <Layout>
+        <div>Loading...</div>
+      </Layout>
+    );
 
   if (!session)
     return (

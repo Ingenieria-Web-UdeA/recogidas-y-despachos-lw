@@ -8,9 +8,9 @@ import {
   CREATE_COLLECTION,
   GET_FILTERED_COLLECTIONS,
 } from 'graphql/client/collections';
-import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
-import ReactLoading from 'react-loading';
+import FormButtons from '@components/FormButtons';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ModalRecogidas = () => {
   const { openModalRecogidas, setOpenModalRecogidas } = useRecogidasContext();
@@ -124,22 +124,7 @@ const FormModalRecogidas = ({ setOpenModal }: FormModalRecogidasInterface) => {
             ))}
           </select>
         </label>
-        <div className='flex w-full justify-center gap-3'>
-          <button disabled={mutationLoading} type='submit'>
-            {mutationLoading ? (
-              <ReactLoading type='spin' height={30} width={30} />
-            ) : (
-              <span>Agregar</span>
-            )}
-          </button>
-          <button
-            disabled={mutationLoading}
-            type='button'
-            className='secondary'
-          >
-            Cancelar
-          </button>
-        </div>
+        <FormButtons loading={mutationLoading} setOpenModal={setOpenModal} />
       </form>
     </div>
   );

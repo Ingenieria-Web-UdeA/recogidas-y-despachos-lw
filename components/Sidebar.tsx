@@ -4,6 +4,7 @@ import React from 'react';
 import { MdMenu, MdMenuOpen } from 'react-icons/md';
 import PrivateComponent from './PrivateComponent';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const Sidebar = () => {
   const { openSidebar, setOpenSidebar } = useNavigationContext();
@@ -25,15 +26,13 @@ const Sidebar = () => {
         </div>
         <nav>
           <ul className='flex flex-col gap-3'>
-            <li>Recogidas</li>
-            <li>Despachos</li>
+            <SidebarLink href='/recogidas' text='Recogidas' />
+            <SidebarLink href='/despachos' text='Despachos' />
             <PrivateComponent role='Admin'>
-              <li>Facturación</li>
+              <SidebarLink href='/facturacion' text='Facturación' />
             </PrivateComponent>
             <PrivateComponent role='Admin'>
-              <li>
-                <Link href='/indicadores'>Indicadores</Link>
-              </li>
+              <SidebarLink href='/indicadores' text='Indicadores' />
             </PrivateComponent>
           </ul>
         </nav>
@@ -42,6 +41,23 @@ const Sidebar = () => {
         Log out
       </button>
     </aside>
+  );
+};
+
+interface SidebarLinkProps {
+  href: string;
+  text: string;
+}
+
+const SidebarLink = ({ href, text }: SidebarLinkProps) => {
+  const router = useRouter();
+
+  const isActive = router.pathname === href;
+
+  return (
+    <Link href={href}>
+      <li className={isActive ? 'active' : ''}>{text}</li>
+    </Link>
   );
 };
 

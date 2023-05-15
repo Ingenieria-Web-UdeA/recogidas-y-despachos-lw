@@ -9,7 +9,7 @@ const IndexPage = () => {
   if (status === 'loading') return <div>Loading...</div>;
 
   if (session) {
-    router.push('/app');
+    router.push('/recogidas');
   }
 
   return (

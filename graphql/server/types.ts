@@ -47,11 +47,23 @@ const typeDefs = gql`
     updatedAt: DateTime
   }
 
+  type Shipment {
+    id: ID
+    shippedBunches: Int
+    shipmentDate: DateTime
+    bunchWeight: Float
+    deliveredWeight: Float
+    createdBy: User
+    createdAt: DateTime
+    updatedAt: DateTime
+  }
+
   type Query {
     users: [User]
     user(email: String!): User
     collections: [Collection]
     filterCollections(month: Int, year: Int): [Collection]
+    filterShipments(month: Int, year: Int): [Shipment]
     indicators: [Indicator]
     lots: [Lot]
   }
@@ -63,6 +75,11 @@ const typeDefs = gql`
       bunches: Int
       collectionDate: String
     ): Collection
+    createShipment(
+      shippedBunches: Int
+      shipmentDate: String
+      deliveredWeight: Float
+    ): Shipment
   }
 `;
 

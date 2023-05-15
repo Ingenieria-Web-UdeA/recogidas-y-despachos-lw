@@ -60,9 +60,7 @@ const resolvers: Resolver = {
     filterCollections: async (parent, args, context) => {
       const { db } = context;
       const { month, year } = args;
-
-      const initalDate = new Date(year, month, 1, -5, 0, 0);
-      const finalDate = new Date(year, month + 1, 1, -5, 0, 0);
+      const { initalDate, finalDate } = getMonthStartEndDates({ month, year });
 
       const filteredCollections = await db.collection.findMany({
         where: {
@@ -92,6 +90,33 @@ const resolvers: Resolver = {
       });
 
       return filteredCollections;
+    },
+    filterShipments: async (parent, args, context) => {
+      const { db } = context;
+      const { month, year } = args;
+      const { initalDate, finalDate } = getMonthStartEndDates({
+        month,
+        year,
+      });
+
+      const filteredShipments = await db.shipment.findMany({
+        where: {
+          AND: [
+            {
+              shipmentDate: {
+                gte: initalDate,
+              },
+            },
+            {
+              shipmentDate: {
+                lt: finalDate,
+              },
+            },
+          ],
+        },
+      });
+
+      return filteredShipments;
     },
     indicators: async (parent, args, context) => {
       const { session, db } = context;
@@ -169,7 +194,38 @@ const resolvers: Resolver = {
 
       return newCollection;
     },
+    createShipment: async (parent, args, context) => {
+      const { db, session } = context;
+
+      const newShipment = await db.shipment.create({
+        data: {
+          shippedBunches: args.shippedBunches,
+          shipmentDate: new Date(args.shipmentDate),
+          deliveredWeight: args.deliveredWeight,
+          bunchWeight: args.deliveredWeight / args.shippedBunches,
+          createdBy: {
+            connect: {
+              email: session?.user?.email ?? '',
+            },
+          },
+        },
+      });
+
+      return newShipment;
+    },
   },
+};
+
+interface GetMonthStartEndDatesProps {
+  month: number;
+  year: number;
+}
+
+const getMonthStartEndDates = ({ month, year }: GetMonthStartEndDatesProps) => {
+  const initalDate = new Date(year, month, 1, -5, 0, 0);
+  const finalDate = new Date(year, month + 1, 1, -5, 0, 0);
+
+  return { initalDate, finalDate };
 };
 
 export { resolvers };
