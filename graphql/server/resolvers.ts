@@ -152,11 +152,24 @@ const resolvers: Resolver = {
     },
     getCollectionsByMonth: async (parent, args, context) => {
       const { db } = context;
-      const { year } = args;
+      const { initYear, initMonth, finalYear, finalMonth } = args;
 
-      return await db.$queryRaw`
-      select * from monthly_collections where year = ${year}
+      const initialDate = new Date(initYear, initMonth, 0);
+      const finalDate = new Date(finalYear, finalMonth + 1, 0);
+
+      const response = await db.$queryRaw`
+      select 
+      concat(year,'-',month) as "monthYear",
+      lot,
+      "totalBunches" 
+      from monthly_collections
+     where date between ${initialDate} and ${finalDate}
+      order by date asc
       `;
+
+      // console.log(response);
+
+      return response;
     },
   },
   Mutation: {

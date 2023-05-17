@@ -1,4 +1,11 @@
 import { useDateFiltersContext } from '@context/dateFilterContext';
+import {
+  RangeSelector,
+  Margin,
+  Scale,
+  MinorTick,
+  SliderMarker,
+} from 'devextreme-react/range-selector';
 
 const years = [2021, 2022, 2023];
 
@@ -24,54 +31,41 @@ interface DateFiltersProps {
 
 const DataFilters = ({ hideMonth, hideYear }: DateFiltersProps) => {
   const { dateFilters, setDateFilters } = useDateFiltersContext();
+
+  const startValue = new Date(2021, 0, 1);
+  const endValue = new Date();
+  const range = [
+    new Date(dateFilters.initYear ?? 2023, dateFilters.initMonth ?? 0, 1),
+    new Date(dateFilters.finalYear ?? 2023, dateFilters.finalMonth ?? 0, 1),
+  ];
+
   return (
     <div className='flex w-full justify-center gap-2'>
-      {!hideYear && (
-        <label>
-          <span>Año</span>
-          <select
-            value={dateFilters?.year?.toString()}
-            onChange={(e) =>
-              setDateFilters((prev) => ({
-                ...prev,
-                year: parseInt(e.target.value),
-              }))
-            }
-          >
-            <option value='' disabled>
-              Seleccionar Año
-            </option>
-            {years.map((year) => (
-              <option key={`year_${year}`} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {!hideMonth && (
-        <label>
-          <span>Mes</span>
-          <select
-            value={dateFilters?.month?.toString()}
-            onChange={(e) =>
-              setDateFilters((prev) => ({
-                ...prev,
-                month: parseInt(e.target.value),
-              }))
-            }
-          >
-            <option value='' disabled>
-              Seleccionar mes
-            </option>
-            {months.map((month) => (
-              <option key={`month_${month.value}`} value={month.value}>
-                {month.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      <RangeSelector
+        id='range-selector'
+        title='Rango de fechas'
+        defaultValue={range}
+        width='100%'
+        onValueChanged={(e) => {
+          setDateFilters({
+            initMonth: new Date(e.value[0]).getMonth(),
+            initYear: new Date(e.value[0]).getFullYear(),
+            finalMonth: new Date(e.value[1]).getMonth(),
+            finalYear: new Date(e.value[1]).getFullYear(),
+          });
+        }}
+      >
+        <Scale
+          startValue={startValue}
+          endValue={endValue}
+          minorTickInterval='month'
+          tickInterval='month'
+          minRange='month'
+        >
+          <MinorTick visible={false} />
+        </Scale>
+        <SliderMarker format='monthAndDay' />
+      </RangeSelector>
     </div>
   );
 };

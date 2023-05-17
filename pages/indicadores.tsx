@@ -28,13 +28,27 @@ interface Indicator {
   totalBunches: number;
 }
 
-const Indicadores = () => {
+const Indicadores = () => (
+  <PrivateRoute>
+    <Layout>
+      <div className='p-10'>
+        <DataFilters hideMonth />
+        <MonthChart />
+      </div>
+    </Layout>
+  </PrivateRoute>
+);
+
+const MonthChart = () => {
   const { dateFilters } = useDateFiltersContext();
   const { data, loading } = useQuery<{ getCollectionsByMonth: Indicator[] }>(
     GET_INDICATORS,
     {
       variables: {
-        year: dateFilters.year,
+        initMonth: dateFilters.initMonth,
+        initYear: dateFilters.initYear,
+        finalMonth: dateFilters.finalMonth,
+        finalYear: dateFilters.finalYear,
       },
     }
   );
@@ -45,10 +59,19 @@ const Indicadores = () => {
 
   if (loading || lotsLoading) return <div>Loading...</div>;
 
-  const groupedData = _.groupBy(data?.getCollectionsByMonth, 'month');
+  const lotNames = lotData?.lots.map((lot) => ({
+    value: lot.name,
+    name: lot.name,
+  }));
+
+  const groupedData = _.groupBy(data?.getCollectionsByMonth, 'monthYear');
+
   const modifiedData = Object.keys(groupedData).map((month) => {
+    const [y, m] = month.split('-');
+    const monthName = months.find((el) => el.value === parseInt(m) - 1)?.name;
+
     const monthData: { [key: string]: string | number } = {
-      month: months.find((m) => m.value === parseInt(month) - 1)?.name ?? '',
+      monthYear: `${monthName} ${y}`,
     };
 
     groupedData[month].forEach((lot) => {
@@ -58,44 +81,28 @@ const Indicadores = () => {
     return monthData;
   });
 
-  const lotNames = lotData?.lots.map((lot) => ({
-    value: lot.name,
-    name: lot.name,
-  }));
-
   return (
-    <PrivateRoute>
-      <Layout>
-        <div className='p-10'>
-          <DataFilters hideMonth />
-          <Chart palette='Violet' dataSource={modifiedData}>
-            <CommonSeriesSettings argumentField='month' type='line' />
-            {lotNames?.map((item) => (
-              <Series
-                key={item.value}
-                valueField={item.value}
-                name={item.name}
-              />
-            ))}
-            <Margin bottom={20} />
-            <ArgumentAxis
-              valueMarginsEnabled={false}
-              discreteAxisDivisionMode='crossLabels'
-            >
-              <Grid visible={true} />
-            </ArgumentAxis>
-            <Legend
-              verticalAlignment='bottom'
-              horizontalAlignment='center'
-              itemTextPosition='bottom'
-            />
-            <Export enabled={true} />
-            <Title text='Cantidad de racimos por mes' />
-            <Tooltip enabled={true} />
-          </Chart>
-        </div>
-      </Layout>
-    </PrivateRoute>
+    <Chart palette='Violet' dataSource={modifiedData}>
+      <CommonSeriesSettings argumentField='monthYear' type='line' />
+      {lotNames?.map((item) => (
+        <Series key={item.value} valueField={item.value} name={item.name} />
+      ))}
+      <Margin bottom={20} />
+      <ArgumentAxis
+        valueMarginsEnabled={false}
+        discreteAxisDivisionMode='crossLabels'
+      >
+        <Grid visible={true} />
+      </ArgumentAxis>
+      <Legend
+        verticalAlignment='bottom'
+        horizontalAlignment='center'
+        itemTextPosition='bottom'
+      />
+      <Export enabled={true} />
+      <Title text='Cantidad de racimos por mes' />
+      <Tooltip enabled={true} />
+    </Chart>
   );
 };
 

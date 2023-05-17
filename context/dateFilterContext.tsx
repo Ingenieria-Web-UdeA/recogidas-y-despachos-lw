@@ -7,8 +7,10 @@ import {
 } from 'react';
 
 interface DateFilter {
-  month: number | null;
-  year: number | null;
+  initMonth: number | null;
+  initYear: number | null;
+  finalMonth: number | null;
+  finalYear: number | null;
 }
 
 interface DateFiltersContextProps {
@@ -34,9 +36,16 @@ const DateFiltersContextProvider = ({
   const currentYear = currentDate.getFullYear();
 
   const [dateFilters, setDateFilters] = useState<{
-    month: number | null;
-    year: number | null;
-  }>({ month: currentMonth, year: currentYear });
+    initMonth: number | null;
+    initYear: number | null;
+    finalMonth: number | null;
+    finalYear: number | null;
+  }>({
+    initMonth: currentMonth,
+    initYear: currentYear,
+    finalMonth: currentMonth,
+    finalYear: currentYear,
+  });
   return (
     <DateFiltersContext.Provider value={{ dateFilters, setDateFilters }}>
       {children}

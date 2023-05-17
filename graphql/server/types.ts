@@ -59,6 +59,7 @@ const typeDefs = gql`
   }
 
   type CollectionByMonth {
+    monthYear: String
     year: Int
     month: Int
     lot: String
@@ -71,7 +72,12 @@ const typeDefs = gql`
     collections: [Collection]
     filterCollections(month: Int, year: Int): [Collection]
     filterShipments(month: Int, year: Int): [Shipment]
-    getCollectionsByMonth(year: Int): [CollectionByMonth]
+    getCollectionsByMonth(
+      initYear: Int
+      initMonth: Int
+      finalYear: Int
+      finalMonth: Int
+    ): [CollectionByMonth]
     indicators: [Indicator]
     lots: [Lot]
   }
